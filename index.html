@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Boutique Scolaire - Loïc & Imad</title>
+    <style>
+        :root { --primary: #2563eb; --primary-hover: #1d4ed8; --bg: #f8fafc; --card-bg: #ffffff; --text: #1e293b; --accent: #10b981; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; }
+        header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 3rem 1rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; cursor: pointer; user-select: none; }
+        header p { font-size: 1.2rem; opacity: 0.9; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-top: 1rem; }
+        nav { background: white; padding: 1rem; text-align: center; position: sticky; top: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); z-index: 10; }
+        nav a { margin: 0 1.5rem; text-decoration: none; color: var(--text); font-weight: 600; transition: color 0.2s; }
+        nav a:hover { color: var(--primary); }
+        main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        h2 { text-align: center; margin-bottom: 2rem; color: var(--primary); font-size: 2rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; text-align: center; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .card h3 { margin-bottom: 0.5rem; font-size: 1.3rem; }
+        .price { font-size: 1.4rem; font-weight: bold; color: var(--primary); margin: 1rem 0; }
+        .btn { background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: auto; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-added { background: var(--accent) !important; }
+        .contact-box, .admin-box { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); max-width: 550px; margin: 0 auto 2rem auto; }
+        .admin-box { border: 2px dashed var(--primary); display: none; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem; }
+        .info-box { background: #eff6ff; border-left: 4px solid var(--primary); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0; font-size: 0.95rem; }
+        footer { text-align: center; padding: 1.5rem; background: #0f172a; color: #94a3b8; margin-top: 4rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="checkAdmin()">Loïc & Imad Store</h1>
+        <p>Les meilleures fournitures scolaires</n        <span class="badge">🤝 Paiement & Remise en main propre à l'école</span>
+    </header>
+
+    <nav>
+        <a href="#produits">Nos Articles</a>
+        <a href="#contact">Commander</a>
+    </nav>
+
+    <main>
+        <!-- Panneau Admin Caché -->
+        <div id="adminPanel" class="admin-box">
+            <h2>⚙️ Panel Admin</h2>
+            <form onsubmit="ajouterProduit(event)">
+                <div class="form-group">
+                    <label>Nom du produit :</label>
+                    <input type="text" id="adminNom" required>
+                </div>
+                <div class="form-group">
+                    <label>Description :</label>
+                    <input type="text" id="adminDesc" required>
+                </div>
+                <div class="form-group">
+                    <label>Prix (ex: 3,50) :</label>
+                    <input type="text" id="adminPrix" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Ajouter l'article</button>
+            </form>
+        </div>
+
+        <section id="produits">
+            <h2>Nos Produits</h2>
+            <div class="grid" id="productGrid">
+                <!-- Les produits apparaîtront ici -->
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Passer commande</h2>
+            <div class="contact-box">
+                <div class="info-box">
+                    <strong>Comment ça marche ?</strong><br>1. Ajoute tes articles ci-dessus.<br>2. Choisis ton moment de récupération.<br>3. Loïc ou Imad t'apportera ta commande directement !
+                </div>
+                <form onsubmit="validerCommande(event)">
+                    <div class="form-group"><label for="nom">Ton nom et ta classe :</label><input type="text" id="nom" required placeholder="Ex: Thomas - 4B"></div>
+                    <div class="form-group"><label for="commande">Ta sélection :</label><textarea id="commande" rows="4" required placeholder="Clique sur 'Ajouter' sur les produits..."></textarea></div>
+                    <div class="form-group">
+                        <label for="rdv">Où et quand récupérer ?</label>
+                        <select id="rdv" required>
+                            <option value="">-- Choisis un moment --</option>
+                            <option value="Récréation du matin (Cour B)">Récréation du matin (Cour B)</option>
+                            <option value="Pause déjeuner (Devant la cantine)">Pause déjeuner (Devant la cantine)</option>
+                            <option value="Sortie des cours (17h)">Sortie des cours (17h)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Confirmer la commande</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer><p>&copy; 2026 Loïc & Imad — Commerce de l'école</p></footer>
+
+    <script>
+        let clickCount = 0;
+        function checkAdmin() {
+            clickCount++;
+            if (clickCount === 5) {
+                const code = prompt("Accès restreint. Entrez le code administrateur :");
+                if (code === "1234") { // Tu peux changer "1234" par le code de ton choix
+                    document.getElementById('adminPanel').style.display = 'block';
+                    alert('Mode Admin activé');
+                } else {
+                    alert('Code incorrect');
+                }
+                clickCount = 0; // Réinitialisation
+            }
+        }
+
+        const produits = [
+            { nom: 'Cahier à spirale A4', desc: 'Idéal pour la prise de notes, couverture rigide.', prix: '2,50' },
+            { nom: 'Pack Stylos 4 couleurs', desc: 'Encre fluide, prise en main ergonomique.', prix: '1,80' },
+            { nom: 'Trousse XL renforcée', desc: 'Grande capacité, disponible en bleu ou noir.', prix: '5,00' },
+            { nom: 'Règle incassable 30cm', desc: 'Flexible et ultra-résistante.', prix: '1,20' }
+        ];
+
+        function afficherProduits() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            produits.forEach(p => {
+                grid.innerHTML += `
+                <div class="card">
+                    <h3>${p.nom}</h3>
+                    <p>${p.desc}</p>
+                    <div class="price">${p.prix} €</div>
+                    <button class="btn" onclick="ajouterAuPanier('${p.nom} - ${p.prix} €', this)">Ajouter</button>
+                </div>`;
+            });
+        }
+
+        function ajouterProduit(e) {
+            e.preventDefault();
+            const nom = document.getElementById('adminNom').value;
+            const desc = document.getElementById('adminDesc').value;
+            const prix = document.getElementById('adminPrix').value;
+            
+            produits.push({ nom, desc, prix });
+            afficherProduits();
+            
+            document.getElementById('adminNom').value = '';
+            document.getElementById('adminDesc').value = '';
+            document.getElementById('adminPrix').value = '';
+        }
+
+        function ajouterAuPanier(article, btn) {
+            const textarea = document.getElementById('commande');
+            textarea.value += textarea.value ? '\n' + article : article;
+            btn.textContent = 'Ajouté ✓';
+            btn.classList.add('btn-added');
+            setTimeout(() => { btn.textContent = 'Ajouter'; btn.classList.remove('btn-added'); }, 1500);
+        }
+
+        function validerCommande(e) {
+            e.preventDefault();
+            alert(`Merci ${document.getElementById('nom').value} !\n\nCommande enregistrée. Pense à apporter l'appoint en monnaie ! 😉`);
+            document.getElementById('nom').value = '';
+            document.getElementById('commande').value = '';
+            document.getElementById('rdv').value = '';
+        }
+
+        afficherProduits();
+    </script>
+</body>
+</html>
