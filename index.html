@@ -3,168 +3,429 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fournitures scolaires vendues par Loïc & Imad. Paiement et remise en main propre à l'école.">
+    <meta name="theme-color" content="#2563eb">
     <title>La Boutique Scolaire - Loïc & Imad</title>
     <style>
-        :root { --primary: #2563eb; --primary-hover: #1d4ed8; --bg: #f8fafc; --card-bg: #ffffff; --text: #1e293b; --accent: #10b981; }
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8; --accent: #10b981; --danger: #dc2626; --warn: #f59e0b;
+            --bg: #f1f5f9; --card-bg: #ffffff; --text: #0f172a; --muted: #64748b; --border: #e2e8f0; --info-bg: #eff6ff; --shadow: 0 4px 14px rgba(15,23,42,.08);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg: #0b1220; --card-bg: #172033; --text: #e2e8f0; --muted: #94a3b8; --border: #2b3a55; --info-bg: #14264a; --primary: #3b82f6; --primary-hover: #2563eb; --shadow: 0 4px 14px rgba(0,0,0,.35); }
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; }
-        header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 3rem 1rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; cursor: pointer; user-select: none; }
-        header p { font-size: 1.2rem; opacity: 0.9; }
-        .badge { display: inline-block; background: var(--accent); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-top: 1rem; }
-        nav { background: white; padding: 1rem; text-align: center; position: sticky; top: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); z-index: 10; }
-        nav a { margin: 0 1.5rem; text-decoration: none; color: var(--text); font-weight: 600; transition: color 0.2s; }
+        html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 5rem; }
+        header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 60%, #4338ca 100%); color: white; padding: 3.5rem 1rem 4rem; text-align: center; position: relative; overflow: hidden; }
+        header::before, header::after { content: ""; position: absolute; border-radius: 50%; background: rgba(255,255,255,.08); }
+        header::before { width: 260px; height: 260px; top: -90px; left: -60px; }
+        header::after { width: 200px; height: 200px; bottom: -80px; right: -40px; }
+        header > * { position: relative; }
+        header h1 { font-size: clamp(1.9rem, 7vw, 2.8rem); margin-bottom: .4rem; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; letter-spacing: -.5px; }
+        header p { font-size: 1.15rem; opacity: .92; }
+        .badge { display: inline-block; background: rgba(255,255,255,.18); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,.35); color: white; padding: .35rem 1rem; border-radius: 999px; font-size: .9rem; font-weight: 600; margin-top: 1.2rem; }
+        .steps { display: flex; justify-content: center; gap: .8rem; flex-wrap: wrap; margin-top: 1.5rem; font-size: .9rem; }
+        .steps span { background: rgba(255,255,255,.14); padding: .3rem .8rem; border-radius: 999px; }
+        nav { background: color-mix(in srgb, var(--card-bg) 90%, transparent); backdrop-filter: blur(8px); padding: .8rem 1rem; text-align: center; position: sticky; top: 0; border-bottom: 1px solid var(--border); z-index: 10; }
+        nav a { margin: 0 1rem; text-decoration: none; color: var(--text); font-weight: 600; transition: color .2s; }
         nav a:hover { color: var(--primary); }
         main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
-        h2 { text-align: center; margin-bottom: 2rem; color: var(--primary); font-size: 2rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
-        .card { background: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; text-align: center; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .card h3 { margin-bottom: 0.5rem; font-size: 1.3rem; }
-        .price { font-size: 1.4rem; font-weight: bold; color: var(--primary); margin: 1rem 0; }
-        .btn { background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: auto; }
+        h2 { text-align: center; margin-bottom: 1.8rem; font-size: 1.8rem; }
+        h2 small { display: block; font-size: .95rem; font-weight: 400; color: var(--muted); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.2rem; margin-bottom: 3rem; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem 1.2rem; box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column; text-align: center; }
+        .card:hover { transform: translateY(-4px); }
+        .card .emoji { font-size: 2.6rem; width: 4.5rem; height: 4.5rem; line-height: 4.5rem; margin: 0 auto .8rem; background: var(--info-bg); border-radius: 50%; }
+        .card h3 { margin-bottom: .3rem; font-size: 1.2rem; }
+        .card p { color: var(--muted); font-size: .95rem; }
+        .price { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin: .8rem 0 1rem; }
+        .empty, .loading { text-align: center; color: var(--muted); grid-column: 1 / -1; padding: 1rem; }
+        .btn { background: var(--primary); color: white; border: none; padding: .75rem 1rem; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background .2s, transform .1s; margin-top: auto; font-family: inherit; }
         .btn:hover { background: var(--primary-hover); }
+        .btn:active { transform: scale(.97); }
+        .btn:disabled { opacity: .6; cursor: wait; }
         .btn-added { background: var(--accent) !important; }
-        .contact-box, .admin-box { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); max-width: 550px; margin: 0 auto 2rem auto; }
-        .admin-box { border: 2px dashed var(--primary); display: none; }
-        .form-group { margin-bottom: 1.2rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem; }
-        .info-box { background: #eff6ff; border-left: 4px solid var(--primary); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0; font-size: 0.95rem; }
-        footer { text-align: center; padding: 1.5rem; background: #0f172a; color: #94a3b8; margin-top: 4rem; }
+        .btn-small { padding: .3rem .7rem; margin: 0; border-radius: 8px; font-size: .9rem; }
+        .btn-ghost { background: transparent; color: var(--primary); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: var(--info-bg); }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #b91c1c; }
+        :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+        .box { background: var(--card-bg); border: 1px solid var(--border); padding: 1.8rem; border-radius: 16px; box-shadow: var(--shadow); max-width: 560px; margin: 0 auto 2rem; }
+        .form-group { margin-bottom: 1.1rem; }
+        .form-group label { display: block; margin-bottom: .4rem; font-weight: 600; font-size: .95rem; }
+        input, select { width: 100%; padding: .7rem .8rem; border: 1px solid var(--border); border-radius: 10px; font: inherit; background: var(--bg); color: var(--text); }
+        .info-box { background: var(--info-bg); border-left: 4px solid var(--primary); padding: .9rem 1rem; margin-bottom: 1.4rem; border-radius: 0 10px 10px 0; font-size: .95rem; }
+        .cart-list { list-style: none; margin-bottom: .8rem; }
+        .cart-list li { display: flex; align-items: center; gap: .6rem; padding: .6rem 0; border-bottom: 1px solid var(--border); }
+        .cart-list .name { flex: 1; font-weight: 600; }
+        .cart-list .qty { min-width: 1.6rem; text-align: center; font-weight: 700; }
+        .cart-total { display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; margin-bottom: 1.2rem; }
+        .cart-empty { color: var(--muted); text-align: center; padding: .5rem 0 1rem; }
+        .success { background: #dcfce7; color: #14532d; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; display: none; }
+        .success.show { display: block; }
+        .error { background: #fee2e2; color: #7f1d1d; }
+        .fab { position: fixed; right: 1rem; bottom: 1rem; z-index: 15; background: var(--primary); color: white; text-decoration: none; padding: .8rem 1.2rem; border-radius: 999px; font-weight: 700; box-shadow: 0 8px 24px rgba(37,99,235,.45); display: none; align-items: center; gap: .6rem; }
+        .fab.show { display: inline-flex; }
+        .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: .7rem 1.2rem; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 30; max-width: 90vw; text-align: center; }
+        .toast.show { opacity: 1; }
+        footer { text-align: center; padding: 1.5rem; background: #0f172a; color: #94a3b8; margin-top: 3rem; }
+
+        /* ===== ADMIN ===== */
+        #adminPanel { display: none; max-width: 1000px; margin: 0 auto 3rem; background: var(--card-bg); border: 2px dashed var(--primary); border-radius: 16px; padding: 1.5rem; }
+        #adminPanel h2 { text-align: left; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+        .tabs { display: flex; gap: .5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+        .tab { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: .5rem 1rem; border-radius: 999px; cursor: pointer; font: inherit; font-weight: 600; }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .tab .dot { background: var(--danger); color: white; border-radius: 999px; padding: 0 .5rem; font-size: .8rem; margin-left: .3rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .8rem; margin-bottom: 1.2rem; }
+        .stat { background: var(--bg); border-radius: 12px; padding: .8rem 1rem; }
+        .stat b { display: block; font-size: 1.4rem; }
+        .stat span { color: var(--muted); font-size: .85rem; }
+        .toolbar { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .toolbar select { width: auto; }
+        .order { border: 1px solid var(--border); border-left: 5px solid var(--primary); border-radius: 12px; padding: 1rem; margin-bottom: .8rem; background: var(--bg); }
+        .order.st-nouvelle { border-left-color: var(--warn); }
+        .order.st-prete { border-left-color: var(--primary); }
+        .order.st-remise { border-left-color: var(--accent); }
+        .order.st-annulee { border-left-color: var(--muted); opacity: .65; }
+        .order-head { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; margin-bottom: .4rem; }
+        .order-head strong { font-size: 1.05rem; }
+        .order small { color: var(--muted); }
+        .order ul { margin: .4rem 0 .6rem 1.2rem; }
+        .order-foot { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; }
+        .order-foot select { width: auto; }
+        .admin-list { list-style: none; margin-top: 1.2rem; }
+        .admin-list li { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid var(--border); }
+        .row { display: grid; grid-template-columns: 5rem 1fr; gap: .8rem; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 onclick="checkAdmin()">Loïc & Imad Store</h1>
-        <p>Les meilleures fournitures scolaires</n        <span class="badge">🤝 Paiement & Remise en main propre à l'école</span>
+        <h1 id="title">Loïc & Imad Store</h1>
+        <p>Les meilleures fournitures scolaires</p>
+        <span class="badge">🤝 Paiement & remise en main propre à l'école</span>
+        <div class="steps"><span>1. Choisis</span><span>2. Commande</span><span>3. Récupère</span></div>
     </header>
 
     <nav>
-        <a href="#produits">Nos Articles</a>
-        <a href="#contact">Commander</a>
+        <a href="#produits">🛍️ Articles</a>
+        <a href="#contact">🧾 Mon panier</a>
     </nav>
 
     <main>
-        <!-- Panneau Admin Caché -->
-        <div id="adminPanel" class="admin-box">
-            <h2>⚙️ Panel Admin</h2>
-            <form onsubmit="ajouterProduit(event)">
-                <div class="form-group">
-                    <label>Nom du produit :</label>
-                    <input type="text" id="adminNom" required>
+        <!-- ESPACE ADMIN (5 clics sur le titre) -->
+        <div id="adminPanel">
+            <h2>
+                <span>⚙️ Espace admin</span>
+                <button class="btn btn-small btn-ghost" id="adminLogout" type="button">Se déconnecter</button>
+            </h2>
+            <div class="tabs">
+                <button class="tab active" data-tab="orders" type="button">📦 Commandes <span class="dot" id="newDot" hidden>0</span></button>
+                <button class="tab" data-tab="products" type="button">🛍️ Produits</button>
+            </div>
+
+            <div id="tabOrders">
+                <div class="stats">
+                    <div class="stat"><b id="stNew">0</b><span>nouvelles</span></div>
+                    <div class="stat"><b id="stDue">0,00 €</b><span>à encaisser</span></div>
+                    <div class="stat"><b id="stDone">0,00 €</b><span>encaissé</span></div>
                 </div>
-                <div class="form-group">
-                    <label>Description :</label>
-                    <input type="text" id="adminDesc" required>
+                <div class="toolbar">
+                    <select id="orderFilter" aria-label="Filtrer les commandes">
+                        <option value="active">À traiter (nouvelles + prêtes)</option>
+                        <option value="all">Toutes</option>
+                        <option value="nouvelle">Nouvelles</option>
+                        <option value="prete">Prêtes</option>
+                        <option value="remise">Remises</option>
+                        <option value="annulee">Annulées</option>
+                    </select>
+                    <button class="btn btn-small btn-ghost" id="refreshOrders" type="button">🔄 Actualiser</button>
                 </div>
-                <div class="form-group">
-                    <label>Prix (ex: 3,50) :</label>
-                    <input type="text" id="adminPrix" required>
-                </div>
-                <button type="submit" class="btn" style="width: 100%;">Ajouter l'article</button>
-            </form>
+                <div id="orderList"></div>
+            </div>
+
+            <div id="tabProducts" hidden>
+                <form id="adminForm">
+                    <div class="row">
+                        <div class="form-group"><label for="adminEmoji">Emoji</label><input type="text" id="adminEmoji" maxlength="4" placeholder="✏️"></div>
+                        <div class="form-group"><label for="adminNom">Nom du produit</label><input type="text" id="adminNom" required maxlength="60"></div>
+                    </div>
+                    <div class="form-group"><label for="adminDesc">Description</label><input type="text" id="adminDesc" required maxlength="120"></div>
+                    <div class="form-group"><label for="adminPrix">Prix en € (ex : 3,50)</label><input type="text" id="adminPrix" inputmode="decimal" required pattern="\d+([.,]\d{1,2})?"></div>
+                    <button type="submit" class="btn" style="width:100%">Ajouter l'article</button>
+                </form>
+                <ul class="admin-list" id="adminList"></ul>
+            </div>
         </div>
 
         <section id="produits">
-            <h2>Nos Produits</h2>
-            <div class="grid" id="productGrid">
-                <!-- Les produits apparaîtront ici -->
-            </div>
+            <h2>Nos produits <small>Clique sur « Ajouter » pour remplir ton panier</small></h2>
+            <div class="grid" id="productGrid"><p class="loading">Chargement des produits…</p></div>
         </section>
 
         <section id="contact">
             <h2>Passer commande</h2>
-            <div class="contact-box">
-                <div class="info-box">
-                    <strong>Comment ça marche ?</strong><br>1. Ajoute tes articles ci-dessus.<br>2. Choisis ton moment de récupération.<br>3. Loïc ou Imad t'apportera ta commande directement !
-                </div>
-                <form onsubmit="validerCommande(event)">
-                    <div class="form-group"><label for="nom">Ton nom et ta classe :</label><input type="text" id="nom" required placeholder="Ex: Clément - 2B"></div>
-                    <div class="form-group"><label for="commande">Ta sélection :</label><textarea id="commande" rows="4" required placeholder="Clique sur 'Ajouter' sur les produits..."></textarea></div>
+            <div class="box">
+                <div class="info-box"><strong>Comment ça marche ?</strong><br>Ta commande arrive directement chez Loïc et Imad. Tu paies en monnaie au moment de la remise.</div>
+                <div class="success" id="success" role="status"></div>
+
+                <ul class="cart-list" id="cartList"></ul>
+                <p class="cart-empty" id="cartEmpty">Ton panier est vide. Clique sur « Ajouter » sur un produit.</p>
+                <div class="cart-total"><span>Total</span><span id="cartTotal">0,00 €</span></div>
+
+                <form id="orderForm">
+                    <div class="form-group"><label for="nom">Ton nom et ta classe</label><input type="text" id="nom" required maxlength="60" placeholder="Ex : Clément - 2B" autocomplete="name"></div>
                     <div class="form-group">
                         <label for="rdv">Où et quand récupérer ?</label>
                         <select id="rdv" required>
                             <option value="">-- Choisis un moment --</option>
-                            <option value="Récréation du matin (arbre au milieu de la petite coure)"> Récréation du matin (arbre au milieu de la petite coure) </option>
-                            <option value="Pause déjeuner (Devant le self à 13h30)">Pause déjeuner (Devant le self à 13h30)</option>
-                            <option value="Sortie des cours (15h40)">Sortie des cours (15h40)</option>
+                            <option>Récréation du matin (arbre au milieu de la petite cour)</option>
+                            <option>Pause déjeuner (devant le self à 13h30)</option>
+                            <option>Sortie des cours (15h40)</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn" style="width: 100%;">Confirmer la commande</button>
+                    <button type="submit" class="btn" id="submitBtn" style="width:100%">Confirmer la commande</button>
                 </form>
             </div>
         </section>
     </main>
 
     <footer><p>&copy; 2026 Loïc & Imad — Commerce de l'école</p></footer>
+    <a href="#contact" class="fab" id="fab">🛒 <span id="fabCount">0</span> · <span id="fabTotal">0,00 €</span></a>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script>
-        let clickCount = 0;
-        function checkAdmin() {
-            clickCount++;
-            if (clickCount === 5) {
-                const code = prompt("Accès restreint. Entrez le code administrateur :");
-                if (code === "1234") { // Tu peux changer "1234" par le code de ton choix
-                    document.getElementById('adminPanel').style.display = 'block';
-                    alert('Mode Admin activé');
-                } else {
-                    alert('Code incorrect');
-                }
-                clickCount = 0; // Réinitialisation
-            }
-        }
+        // ================= CONFIGURATION =================
+        // 1) Crée un projet gratuit sur supabase.com, exécute supabase-setup.sql
+        // 2) Colle ici l'URL du projet et la clé « anon / public » (Project Settings > API)
+        const CONFIG = {
+            supabaseUrl: "https://whwsrytsqirycbrfpvrg.supabase.co/rest/v1/",   // ex : "https://abcdxyz.supabase.co"
+            supabaseKey: "sb_publishable_EdN_E0QjgWZsNnwKYPSniA_eFRZqC-8",   // clé anon (publique : elle est faite pour être dans le site)
+            localAdminCode: "1234", // utilisé UNIQUEMENT en mode test local (sans Supabase)
+        };
+        const REMOTE = !!(CONFIG.supabaseUrl && CONFIG.supabaseKey);
 
-        const produits = [
-            { nom: 'Cartouches', desc: 'Idéal pour pouvoir écrire 😅', prix: '2,50' },
+        const DEFAULT_PRODUCTS = [
+            { id: 1, emoji: '🖋️', nom: 'Cartouches', desc: 'Idéal pour pouvoir écrire 😅', prix: 2.5 },
         ];
+        const STATUTS = { nouvelle: 'Nouvelle', prete: 'Prête', remise: 'Remise ✓', annulee: 'Annulée' };
 
-        function afficherProduits() {
-            const grid = document.getElementById('productGrid');
-            grid.innerHTML = '';
-            produits.forEach(p => {
-                grid.innerHTML += `
-                <div class="card">
-                    <h3>${p.nom}</h3>
-                    <p>${p.desc}</p>
-                    <div class="price">${p.prix} €</div>
-                    <button class="btn" onclick="ajouterAuPanier('${p.nom} - ${p.prix} €', this)">Ajouter</button>
-                </div>`;
+        // ================= UTILITAIRES =================
+        const $ = id => document.getElementById(id);
+        const euro = n => Number(n).toFixed(2).replace('.', ',') + ' €';
+        const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+        const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+        function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
+        function el(tag, props = {}, ...kids) { const e = document.createElement(tag); Object.assign(e, props); kids.forEach(k => e.append(k)); return e; }
+        const fmtDate = d => new Date(d).toLocaleString('fr-BE', { dateStyle: 'short', timeStyle: 'short' });
+
+        // ================= COUCHE DONNÉES =================
+        // Mode distant (Supabase) ou mode local (test dans le navigateur)
+        async function rest(path, { method = 'GET', body, prefer } = {}) {
+            const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/${path}`, {
+                method,
+                headers: { apikey: CONFIG.supabaseKey, Authorization: `Bearer ${CONFIG.supabaseKey}`, 'Content-Type': 'application/json', ...(prefer ? { Prefer: prefer } : {}) },
+                body: body ? JSON.stringify(body) : undefined,
+            });
+            if (!res.ok) { let m; try { m = (await res.json()).message; } catch {} throw new Error(m || res.statusText); }
+            const txt = await res.text();
+            return txt ? JSON.parse(txt) : null;
+        }
+        const rpc = (fn, args) => rest('rpc/' + fn, { method: 'POST', body: args });
+        const mapProduct = p => ({ id: p.id, emoji: p.emoji || '📦', nom: p.nom, desc: p.descr ?? p.desc, prix: Number(p.prix) });
+
+        const api = REMOTE ? {
+            async products() { return (await rest('products?select=*&order=id')).map(mapProduct); },
+            async order(o) { await rest('orders', { method: 'POST', body: o, prefer: 'return=minimal' }); },
+            adminOrders: code => rpc('admin_list_orders', { p_code: code }),
+            setStatus: (code, id, s) => rpc('admin_set_status', { p_code: code, p_id: id, p_statut: s }),
+            deleteOrder: (code, id) => rpc('admin_delete_order', { p_code: code, p_id: id }),
+            async addProduct(code, p) { return mapProduct(await rpc('admin_add_product', { p_code: code, p_emoji: p.emoji, p_nom: p.nom, p_descr: p.desc, p_prix: p.prix })); },
+            deleteProduct: (code, id) => rpc('admin_delete_product', { p_code: code, p_id: id }),
+        } : {
+            // --- Mode local : tout reste dans ce navigateur (sert uniquement à tester) ---
+            async products() { return load('vdf_products', DEFAULT_PRODUCTS); },
+            async order(o) { const l = load('vdf_orders', []); l.unshift({ ...o, id: Date.now(), statut: 'nouvelle', created_at: new Date().toISOString() }); save('vdf_orders', l); },
+            async adminOrders(code) { if (code !== CONFIG.localAdminCode) throw new Error('Code incorrect'); return load('vdf_orders', []); },
+            async setStatus(code, id, s) { await this.adminOrders(code); save('vdf_orders', load('vdf_orders', []).map(o => o.id === id ? { ...o, statut: s } : o)); },
+            async deleteOrder(code, id) { await this.adminOrders(code); save('vdf_orders', load('vdf_orders', []).filter(o => o.id !== id)); },
+            async addProduct(code, p) { await this.adminOrders(code); const n = { ...p, id: Date.now() }; save('vdf_products', [...load('vdf_products', DEFAULT_PRODUCTS), n]); return n; },
+            async deleteProduct(code, id) { await this.adminOrders(code); save('vdf_products', load('vdf_products', DEFAULT_PRODUCTS).filter(p => p.id !== id)); },
+        };
+
+        // ================= PRODUITS =================
+        let products = [];
+        async function loadProducts() {
+            try { products = await api.products(); }
+            catch (e) { products = []; $('productGrid').replaceChildren(el('p', { className: 'empty', textContent: "Impossible de charger les produits. Réessaie plus tard." })); return; }
+            renderProducts();
+        }
+        function renderProducts() {
+            const grid = $('productGrid'); grid.replaceChildren();
+            if (!products.length) { grid.append(el('p', { className: 'empty', textContent: 'Aucun produit pour le moment.' })); return; }
+            products.forEach(p => {
+                const btn = el('button', { className: 'btn', type: 'button', textContent: 'Ajouter' });
+                btn.addEventListener('click', () => addToCart(p, btn));
+                grid.append(el('div', { className: 'card' },
+                    el('div', { className: 'emoji', textContent: p.emoji }),
+                    el('h3', { textContent: p.nom }), el('p', { textContent: p.desc }),
+                    el('div', { className: 'price', textContent: euro(p.prix) }), btn));
             });
         }
 
-        function ajouterProduit(e) {
+        // ================= PANIER =================
+        let cart = load('vdf_cart', []);
+        function addToCart(p, btn) {
+            const l = cart.find(x => x.nom === p.nom && x.prix === p.prix);
+            if (l) l.qty++; else cart.push({ nom: p.nom, prix: p.prix, qty: 1 });
+            renderCart();
+            btn.textContent = 'Ajouté ✓'; btn.classList.add('btn-added');
+            setTimeout(() => { btn.textContent = 'Ajouter'; btn.classList.remove('btn-added'); }, 1200);
+        }
+        function renderCart() {
+            const ul = $('cartList'); ul.replaceChildren();
+            cart.forEach((l, i) => {
+                const minus = el('button', { className: 'btn btn-small', type: 'button', textContent: '−', ariaLabel: 'Retirer un ' + l.nom });
+                const plus = el('button', { className: 'btn btn-small', type: 'button', textContent: '+', ariaLabel: 'Ajouter un ' + l.nom });
+                minus.addEventListener('click', () => { if (--l.qty <= 0) cart.splice(i, 1); renderCart(); });
+                plus.addEventListener('click', () => { l.qty++; renderCart(); });
+                ul.append(el('li', {}, el('span', { className: 'name', textContent: l.nom }), minus, el('span', { className: 'qty', textContent: l.qty }), plus, el('span', { textContent: euro(l.prix * l.qty) })));
+            });
+            const total = cart.reduce((s, l) => s + l.prix * l.qty, 0), count = cart.reduce((s, l) => s + l.qty, 0);
+            $('cartTotal').textContent = euro(total);
+            $('cartEmpty').style.display = cart.length ? 'none' : 'block';
+            $('fabCount').textContent = count; $('fabTotal').textContent = euro(total);
+            $('fab').classList.toggle('show', count > 0);
+            save('vdf_cart', cart);
+        }
+
+        // ================= COMMANDE =================
+        $('orderForm').addEventListener('submit', async e => {
             e.preventDefault();
-            const nom = document.getElementById('adminNom').value;
-            const desc = document.getElementById('adminDesc').value;
-            const prix = document.getElementById('adminPrix').value;
-            
-            produits.push({ nom, desc, prix });
-            afficherProduits();
-            
-            document.getElementById('adminNom').value = '';
-            document.getElementById('adminDesc').value = '';
-            document.getElementById('adminPrix').value = '';
+            const box = $('success');
+            if (!cart.length) { toast('Ajoute au moins un article 🙂'); return; }
+            const order = { client: $('nom').value.trim(), items: cart.map(({ nom, prix, qty }) => ({ nom, prix, qty })), total: Math.round(cart.reduce((s, l) => s + l.prix * l.qty, 0) * 100) / 100, rdv: $('rdv').value };
+            const btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'Envoi…';
+            try {
+                await api.order(order);
+                box.className = 'success show';
+                box.textContent = `Merci ${order.client} ! Commande envoyée ✅ Total à payer : ${euro(order.total)}. Pense à apporter l'argent en monnaie 😉`;
+                cart = []; renderCart(); $('nom').value = ''; $('rdv').value = '';
+            } catch (err) {
+                box.className = 'success error show';
+                box.textContent = "Oups, la commande n'a pas pu être envoyée. Vérifie ta connexion et réessaie.";
+            } finally { btn.disabled = false; btn.textContent = 'Confirmer la commande'; box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        });
+
+        // ================= ADMIN =================
+        let adminCode = null, orders = [], knownIds = null, pollTimer = null;
+
+        let clicks = 0, clickTimer;
+        $('title').addEventListener('click', async () => {
+            clearTimeout(clickTimer); clicks++; clickTimer = setTimeout(() => clicks = 0, 2000);
+            if (clicks < 5) return; clicks = 0;
+            if (adminCode) { $('adminPanel').scrollIntoView({ behavior: 'smooth' }); return; }
+            const code = prompt("Accès restreint. Entrez le code administrateur :");
+            if (!code) return;
+            try { orders = await api.adminOrders(code); adminCode = code; openAdmin(); }
+            catch (err) { toast(err.message === 'Code incorrect' ? 'Code incorrect' : 'Erreur : ' + err.message); }
+        });
+
+        function openAdmin() {
+            $('adminPanel').style.display = 'block';
+            knownIds = new Set(orders.map(o => o.id));
+            renderOrders(); renderAdminProducts();
+            $('adminPanel').scrollIntoView({ behavior: 'smooth' });
+            pollTimer = setInterval(refreshOrders, 30000);
+            toast('Mode admin activé');
+        }
+        $('adminLogout').addEventListener('click', () => {
+            adminCode = null; orders = []; clearInterval(pollTimer); $('adminPanel').style.display = 'none'; document.title = 'La Boutique Scolaire - Loïc & Imad';
+        });
+
+        document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+            $('tabOrders').hidden = t.dataset.tab !== 'orders'; $('tabProducts').hidden = t.dataset.tab !== 'products';
+        }));
+
+        async function refreshOrders(manual) {
+            if (!adminCode) return;
+            try {
+                orders = await api.adminOrders(adminCode);
+                const fresh = orders.filter(o => !knownIds.has(o.id));
+                fresh.forEach(o => knownIds.add(o.id));
+                if (fresh.length) toast(`🔔 ${fresh.length} nouvelle(s) commande(s) !`);
+                else if (manual === true) toast('À jour');
+                renderOrders();
+            } catch (err) { toast('Erreur : ' + err.message); }
+        }
+        $('refreshOrders').addEventListener('click', () => refreshOrders(true));
+        $('orderFilter').addEventListener('change', renderOrders);
+
+        function renderOrders() {
+            const nouvelles = orders.filter(o => o.statut === 'nouvelle').length;
+            const sum = fn => orders.filter(fn).reduce((s, o) => s + Number(o.total), 0);
+            $('stNew').textContent = nouvelles;
+            $('stDue').textContent = euro(sum(o => o.statut === 'nouvelle' || o.statut === 'prete'));
+            $('stDone').textContent = euro(sum(o => o.statut === 'remise'));
+            $('newDot').hidden = !nouvelles; $('newDot').textContent = nouvelles;
+            document.title = nouvelles ? `(${nouvelles}) Admin — Boutique` : 'La Boutique Scolaire - Loïc & Imad';
+
+            const f = $('orderFilter').value;
+            const list = orders.filter(o => f === 'all' ? true : f === 'active' ? (o.statut === 'nouvelle' || o.statut === 'prete') : o.statut === f);
+            const wrap = $('orderList'); wrap.replaceChildren();
+            if (!list.length) { wrap.append(el('p', { className: 'empty', textContent: 'Aucune commande ici.' })); return; }
+
+            list.forEach(o => {
+                const sel = el('select', { ariaLabel: 'Statut de la commande' });
+                Object.entries(STATUTS).forEach(([v, l]) => sel.append(el('option', { value: v, textContent: l, selected: v === o.statut })));
+                sel.addEventListener('change', async () => {
+                    try { await api.setStatus(adminCode, o.id, sel.value); o.statut = sel.value; renderOrders(); }
+                    catch (err) { toast('Erreur : ' + err.message); sel.value = o.statut; }
+                });
+                const del = el('button', { className: 'btn btn-small btn-danger', type: 'button', textContent: 'Supprimer' });
+                del.addEventListener('click', async () => {
+                    if (!confirm(`Supprimer la commande de ${o.client} ?`)) return;
+                    try { await api.deleteOrder(adminCode, o.id); orders = orders.filter(x => x.id !== o.id); renderOrders(); }
+                    catch (err) { toast('Erreur : ' + err.message); }
+                });
+                wrap.append(el('div', { className: 'order st-' + o.statut },
+                    el('div', { className: 'order-head' }, el('strong', { textContent: o.client }), el('small', { textContent: fmtDate(o.created_at) })),
+                    el('small', { textContent: '📍 ' + o.rdv }),
+                    el('ul', {}, ...o.items.map(i => el('li', { textContent: `${i.qty} × ${i.nom} — ${euro(i.prix * i.qty)}` }))),
+                    el('div', { className: 'order-foot' }, el('strong', { textContent: 'Total : ' + euro(o.total) }), el('span', {}, sel, ' ', del))));
+            });
         }
 
-        function ajouterAuPanier(article, btn) {
-            const textarea = document.getElementById('commande');
-            textarea.value += textarea.value ? '\n' + article : article;
-            btn.textContent = 'Ajouté ✓';
-            btn.classList.add('btn-added');
-            setTimeout(() => { btn.textContent = 'Ajouter'; btn.classList.remove('btn-added'); }, 1500);
+        function renderAdminProducts() {
+            const ul = $('adminList'); ul.replaceChildren();
+            products.forEach(p => {
+                const del = el('button', { className: 'btn btn-small btn-danger', type: 'button', textContent: 'Supprimer' });
+                del.addEventListener('click', async () => {
+                    if (!confirm(`Supprimer « ${p.nom} » ?`)) return;
+                    try { await api.deleteProduct(adminCode, p.id); products = products.filter(x => x.id !== p.id); renderProducts(); renderAdminProducts(); }
+                    catch (err) { toast('Erreur : ' + err.message); }
+                });
+                ul.append(el('li', {}, el('span', { textContent: `${p.emoji} ${p.nom} — ${euro(p.prix)}` }), del));
+            });
         }
-
-        function validerCommande(e) {
+        $('adminForm').addEventListener('submit', async e => {
             e.preventDefault();
-            alert(`Merci ${document.getElementById('nom').value} !\n\nCommande enregistrée. Pense à apporter l'argent en monnaie ! 😉`);
-            document.getElementById('nom').value = '';
-            document.getElementById('commande').value = '';
-            document.getElementById('rdv').value = '';
-        }
+            const prix = parseFloat($('adminPrix').value.replace(',', '.'));
+            if (!isFinite(prix) || prix < 0) { toast('Prix invalide'); return; }
+            try {
+                const p = await api.addProduct(adminCode, { emoji: $('adminEmoji').value.trim() || '📦', nom: $('adminNom').value.trim(), desc: $('adminDesc').value.trim(), prix });
+                products.push(p); renderProducts(); renderAdminProducts(); e.target.reset(); toast('Article ajouté');
+            } catch (err) { toast('Erreur : ' + err.message); }
+        });
 
-        afficherProduits();
+        // ================= DÉMARRAGE =================
+        renderCart();
+        loadProducts();
     </script>
 </body>
 </html>
