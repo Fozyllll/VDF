@@ -99,6 +99,19 @@
         .admin-list { list-style: none; margin-top: 1.2rem; }
         .admin-list li { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid var(--border); }
         .row { display: grid; grid-template-columns: 5rem 1fr; gap: .8rem; }
+        .shop-tools { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+        .shop-tools input { flex: 1 1 200px; width: auto; }
+        .shop-tools select { width: auto; }
+        .actions { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+        .admin-list .info { flex: 1; min-width: 0; }
+        .admin-list .info small { display: block; color: var(--muted); }
+        .admin-list li.editing { background: var(--info-bg); padding: .5rem; border-radius: 10px; }
+        #adminForm.editing { background: var(--info-bg); border: 1px solid var(--primary); border-radius: 12px; padding: 1rem; }
+        #adminForm h3 { margin-bottom: .8rem; font-size: 1.05rem; }
+        .form-actions { display: flex; gap: .6rem; }
+        .form-actions .btn:first-child { flex: 1; }
+        .info-box.top { margin-bottom: 1rem; }
+        @media (prefers-color-scheme: dark) { .success { background: #14532d; color: #dcfce7; } .error { background: #7f1d1d; color: #fee2e2; } }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
     </style>
 </head>
@@ -134,7 +147,9 @@
                     <div class="stat"><b id="stDue">0,00 €</b><span>à encaisser</span></div>
                     <div class="stat"><b id="stDone">0,00 €</b><span>encaissé</span></div>
                 </div>
+                <p class="info-box top" id="topProducts" hidden></p>
                 <div class="toolbar">
+                    <input type="search" id="orderSearch" placeholder="🔍 Chercher un élève…" aria-label="Chercher une commande" style="flex:1 1 180px;width:auto">
                     <select id="orderFilter" aria-label="Filtrer les commandes">
                         <option value="active">À traiter (nouvelles + prêtes)</option>
                         <option value="all">Toutes</option>
@@ -144,19 +159,21 @@
                         <option value="annulee">Annulées</option>
                     </select>
                     <button class="btn btn-small btn-ghost" id="refreshOrders" type="button">🔄 Actualiser</button>
+                    <button class="btn btn-small btn-ghost" id="exportCsv" type="button">⬇️ Export CSV</button>
                 </div>
                 <div id="orderList"></div>
             </div>
 
             <div id="tabProducts" hidden>
                 <form id="adminForm">
+                    <h3 id="formTitle">➕ Ajouter un article</h3>
                     <div class="row">
                         <div class="form-group"><label for="adminEmoji">Emoji</label><input type="text" id="adminEmoji" maxlength="4" placeholder="✏️"></div>
                         <div class="form-group"><label for="adminNom">Nom du produit</label><input type="text" id="adminNom" required maxlength="60"></div>
                     </div>
                     <div class="form-group"><label for="adminDesc">Description</label><input type="text" id="adminDesc" required maxlength="120"></div>
                     <div class="form-group"><label for="adminPrix">Prix en € (ex : 3,50)</label><input type="text" id="adminPrix" inputmode="decimal" required pattern="\d+([.,]\d{1,2})?"></div>
-                    <button type="submit" class="btn" style="width:100%">Ajouter l'article</button>
+                    <div class="form-actions"><button type="submit" class="btn" id="adminSubmit">Ajouter l'article</button><button type="button" class="btn btn-ghost" id="adminCancel" hidden>Annuler</button></div>
                 </form>
                 <ul class="admin-list" id="adminList"></ul>
             </div>
@@ -164,6 +181,10 @@
 
         <section id="produits">
             <h2>Nos produits <small>Clique sur « Ajouter » pour remplir ton panier</small></h2>
+            <div class="shop-tools">
+                <input type="search" id="search" placeholder="🔍 Rechercher un article…" aria-label="Rechercher un article">
+                <select id="sort" aria-label="Trier les articles"><option value="default">Tri par défaut</option><option value="asc">Prix croissant</option><option value="desc">Prix décroissant</option><option value="nom">Nom A → Z</option></select>
+            </div>
             <div class="grid" id="productGrid"><p class="loading">Chargement des produits…</p></div>
         </section>
 
@@ -176,6 +197,7 @@
                 <ul class="cart-list" id="cartList"></ul>
                 <p class="cart-empty" id="cartEmpty">Ton panier est vide. Clique sur « Ajouter » sur un produit.</p>
                 <div class="cart-total"><span>Total</span><span id="cartTotal">0,00 €</span></div>
+                <p style="text-align:right;margin:-.6rem 0 1rem"><button type="button" class="btn btn-small btn-ghost" id="clearCart" hidden>🗑️ Vider le panier</button></p>
 
                 <form id="orderForm">
                     <div class="form-group"><label for="nom">Ton nom et ta classe</label><input type="text" id="nom" required maxlength="60" placeholder="Ex : Clément - 2B" autocomplete="name"></div>
@@ -246,6 +268,14 @@
             deleteOrder: (code, id) => rpc('admin_delete_order', { p_code: code, p_id: id }),
             async addProduct(code, p) { return mapProduct(await rpc('admin_add_product', { p_code: code, p_emoji: p.emoji, p_nom: p.nom, p_descr: p.desc, p_prix: p.prix })); },
             deleteProduct: (code, id) => rpc('admin_delete_product', { p_code: code, p_id: id }),
+            async updateProduct(code, id, p) {
+                try { const r = await rpc('admin_update_product', { p_code: code, p_id: id, p_emoji: p.emoji, p_nom: p.nom, p_descr: p.desc, p_prix: p.prix }); return mapProduct(Array.isArray(r) ? r[0] : r); }
+                catch (e) {
+                    if (!/function|schema cache|PGRST202/i.test(e.message)) throw e;
+                    // Fonction SQL absente : on recrée l'article puis on supprime l'ancien (aucune perte si ça échoue)
+                    const n = await this.addProduct(code, p); await this.deleteProduct(code, id); return n;
+                }
+            },
         } : {
             // --- Mode local : tout reste dans ce navigateur (sert uniquement à tester) ---
             async products() { return load('vdf_products', DEFAULT_PRODUCTS); },
@@ -255,19 +285,34 @@
             async deleteOrder(code, id) { await this.adminOrders(code); save('vdf_orders', load('vdf_orders', []).filter(o => o.id !== id)); },
             async addProduct(code, p) { await this.adminOrders(code); const n = { ...p, id: Date.now() }; save('vdf_products', [...load('vdf_products', DEFAULT_PRODUCTS), n]); return n; },
             async deleteProduct(code, id) { await this.adminOrders(code); save('vdf_products', load('vdf_products', DEFAULT_PRODUCTS).filter(p => p.id !== id)); },
+            async updateProduct(code, id, p) { await this.adminOrders(code); const n = { ...p, id }; save('vdf_products', load('vdf_products', DEFAULT_PRODUCTS).map(x => x.id === id ? n : x)); return n; },
         };
 
         // ================= PRODUITS =================
-        let products = [];
-        async function loadProducts() {
+        let products = [], view = { q: '', sort: 'default' };
+        async function loadProducts(silent) {
             try { products = await api.products(); }
-            catch (e) { products = []; $('productGrid').replaceChildren(el('p', { className: 'empty', textContent: "Impossible de charger les produits. Réessaie plus tard." })); return; }
-            renderProducts();
+            catch (e) {
+                if (!silent) { products = []; $('productGrid').replaceChildren(el('p', { className: 'empty', textContent: "Impossible de charger les produits. Réessaie plus tard." })); }
+                return { ok: false, changed: false };
+            }
+            const changed = reconcileCart(); renderProducts();
+            return { ok: true, changed };
+        }
+        function visibleProducts() {
+            const q = view.q.trim().toLowerCase();
+            let l = products.filter(p => !q || (p.nom + ' ' + p.desc).toLowerCase().includes(q));
+            if (view.sort === 'asc') l = [...l].sort((a, b) => a.prix - b.prix);
+            else if (view.sort === 'desc') l = [...l].sort((a, b) => b.prix - a.prix);
+            else if (view.sort === 'nom') l = [...l].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+            return l;
         }
         function renderProducts() {
             const grid = $('productGrid'); grid.replaceChildren();
             if (!products.length) { grid.append(el('p', { className: 'empty', textContent: 'Aucun produit pour le moment.' })); return; }
-            products.forEach(p => {
+            const list = visibleProducts();
+            if (!list.length) { grid.append(el('p', { className: 'empty', textContent: `Aucun résultat pour « ${view.q.trim()} ».` })); return; }
+            list.forEach(p => {
                 const btn = el('button', { className: 'btn', type: 'button', textContent: 'Ajouter' });
                 btn.addEventListener('click', () => addToCart(p, btn));
                 grid.append(el('div', { className: 'card' },
@@ -276,15 +321,32 @@
                     el('div', { className: 'price', textContent: euro(p.prix) }), btn));
             });
         }
+        $('search').addEventListener('input', e => { view.q = e.target.value; renderProducts(); });
+        $('sort').addEventListener('change', e => { view.sort = e.target.value; renderProducts(); });
 
         // ================= PANIER =================
         let cart = load('vdf_cart', []);
+        const MAX_QTY = 20;
         function addToCart(p, btn) {
-            const l = cart.find(x => x.nom === p.nom && x.prix === p.prix);
-            if (l) l.qty++; else cart.push({ nom: p.nom, prix: p.prix, qty: 1 });
+            const l = cart.find(x => x.id === p.id);
+            if (l) { if (l.qty >= MAX_QTY) { toast(`Maximum ${MAX_QTY} par article`); return; } l.qty++; }
+            else cart.push({ id: p.id, nom: p.nom, prix: p.prix, qty: 1 });
             renderCart();
             btn.textContent = 'Ajouté ✓'; btn.classList.add('btn-added');
             setTimeout(() => { btn.textContent = 'Ajouter'; btn.classList.remove('btn-added'); }, 1200);
+        }
+        // Resynchronise le panier avec le catalogue (prix/nom modifiés, article supprimé par l'admin)
+        function reconcileCart() {
+            let changed = false;
+            cart = cart.flatMap(l => {
+                const p = products.find(x => x.id === l.id) || products.find(x => x.nom === l.nom);
+                if (!p) { changed = true; return []; }
+                if (p.prix !== l.prix || p.nom !== l.nom) changed = true;
+                return [{ id: p.id, nom: p.nom, prix: p.prix, qty: l.qty }];
+            });
+            renderCart();
+            if (changed && !adminCode) toast('Ton panier a été mis à jour (prix ou article modifié)');
+            return changed;
         }
         function renderCart() {
             const ul = $('cartList'); ul.replaceChildren();
@@ -292,29 +354,34 @@
                 const minus = el('button', { className: 'btn btn-small', type: 'button', textContent: '−', ariaLabel: 'Retirer un ' + l.nom });
                 const plus = el('button', { className: 'btn btn-small', type: 'button', textContent: '+', ariaLabel: 'Ajouter un ' + l.nom });
                 minus.addEventListener('click', () => { if (--l.qty <= 0) cart.splice(i, 1); renderCart(); });
-                plus.addEventListener('click', () => { l.qty++; renderCart(); });
+                plus.addEventListener('click', () => { if (l.qty >= MAX_QTY) { toast(`Maximum ${MAX_QTY} par article`); return; } l.qty++; renderCart(); });
                 ul.append(el('li', {}, el('span', { className: 'name', textContent: l.nom }), minus, el('span', { className: 'qty', textContent: l.qty }), plus, el('span', { textContent: euro(l.prix * l.qty) })));
             });
             const total = cart.reduce((s, l) => s + l.prix * l.qty, 0), count = cart.reduce((s, l) => s + l.qty, 0);
             $('cartTotal').textContent = euro(total);
             $('cartEmpty').style.display = cart.length ? 'none' : 'block';
+            $('clearCart').hidden = !cart.length;
             $('fabCount').textContent = count; $('fabTotal').textContent = euro(total);
             $('fab').classList.toggle('show', count > 0);
             save('vdf_cart', cart);
         }
+        $('clearCart').addEventListener('click', () => { if (confirm('Vider tout le panier ?')) { cart = []; renderCart(); } });
 
         // ================= COMMANDE =================
         $('orderForm').addEventListener('submit', async e => {
             e.preventDefault();
             const box = $('success');
             if (!cart.length) { toast('Ajoute au moins un article 🙂'); return; }
+            const chk = await loadProducts(true);   // vérifie que les prix n'ont pas changé
+            if (chk.ok && chk.changed) { toast('Des prix ont changé : vérifie ton panier 👀'); $('cartList').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+            if (!cart.length) return;
             const order = { client: $('nom').value.trim(), items: cart.map(({ nom, prix, qty }) => ({ nom, prix, qty })), total: Math.round(cart.reduce((s, l) => s + l.prix * l.qty, 0) * 100) / 100, rdv: $('rdv').value };
             const btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'Envoi…';
             try {
                 await api.order(order);
                 box.className = 'success show';
                 box.textContent = `Merci ${order.client} ! Commande envoyée ✅ Total à payer : ${euro(order.total)}. Pense à apporter l'argent en monnaie 😉`;
-                cart = []; renderCart(); $('nom').value = ''; $('rdv').value = '';
+                cart = []; renderCart(); save('vdf_profile', { nom: order.client, rdv: order.rdv });
             } catch (err) {
                 box.className = 'success error show';
                 box.textContent = "Oups, la commande n'a pas pu être envoyée. Vérifie ta connexion et réessaie.";
@@ -366,6 +433,26 @@
         $('refreshOrders').addEventListener('click', () => refreshOrders(true));
         $('orderFilter').addEventListener('change', renderOrders);
 
+        function filteredOrders() {
+            const f = $('orderFilter').value, q = $('orderSearch').value.trim().toLowerCase();
+            return orders.filter(o => (f === 'all' ? true : f === 'active' ? (o.statut === 'nouvelle' || o.statut === 'prete') : o.statut === f)
+                && (!q || (o.client || '').toLowerCase().includes(q)));
+        }
+        async function changeStatus(o, s) {
+            try { await api.setStatus(adminCode, o.id, s); o.statut = s; }
+            catch (err) { toast('Erreur : ' + err.message); }
+            renderOrders();
+        }
+        $('orderSearch').addEventListener('input', renderOrders);
+        $('exportCsv').addEventListener('click', () => {
+            const rows = [['Date', 'Client', 'Rendez-vous', 'Statut', 'Articles', 'Total (€)']];
+            filteredOrders().forEach(o => rows.push([fmtDate(o.created_at), o.client, o.rdv, STATUTS[o.statut] || o.statut, o.items.map(i => `${i.qty}x ${i.nom}`).join(', '), Number(o.total).toFixed(2).replace('.', ',')]));
+            if (rows.length === 1) { toast('Rien à exporter'); return; }
+            const csv = '\ufeff' + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+            const a = el('a', { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })), download: 'commandes-' + new Date().toISOString().slice(0, 10) + '.csv' });
+            a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        });
+
         function renderOrders() {
             const nouvelles = orders.filter(o => o.statut === 'nouvelle').length;
             const sum = fn => orders.filter(fn).reduce((s, o) => s + Number(o.total), 0);
@@ -375,55 +462,104 @@
             $('newDot').hidden = !nouvelles; $('newDot').textContent = nouvelles;
             document.title = nouvelles ? `(${nouvelles}) Admin — Boutique` : 'La Boutique Scolaire - Loïc & Imad';
 
-            const f = $('orderFilter').value;
-            const list = orders.filter(o => f === 'all' ? true : f === 'active' ? (o.statut === 'nouvelle' || o.statut === 'prete') : o.statut === f);
+            const tally = {};
+            orders.filter(o => o.statut !== 'annulee').forEach(o => o.items.forEach(i => tally[i.nom] = (tally[i.nom] || 0) + i.qty));
+            const top = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 3);
+            $('topProducts').hidden = !top.length;
+            $('topProducts').textContent = '🏆 Les plus demandés : ' + top.map(([n, q]) => `${n} (×${q})`).join(' · ');
+
+            const list = filteredOrders();
             const wrap = $('orderList'); wrap.replaceChildren();
             if (!list.length) { wrap.append(el('p', { className: 'empty', textContent: 'Aucune commande ici.' })); return; }
 
             list.forEach(o => {
                 const sel = el('select', { ariaLabel: 'Statut de la commande' });
                 Object.entries(STATUTS).forEach(([v, l]) => sel.append(el('option', { value: v, textContent: l, selected: v === o.statut })));
-                sel.addEventListener('change', async () => {
-                    try { await api.setStatus(adminCode, o.id, sel.value); o.statut = sel.value; renderOrders(); }
-                    catch (err) { toast('Erreur : ' + err.message); sel.value = o.statut; }
-                });
+                sel.addEventListener('change', () => changeStatus(o, sel.value));
                 const del = el('button', { className: 'btn btn-small btn-danger', type: 'button', textContent: 'Supprimer' });
                 del.addEventListener('click', async () => {
                     if (!confirm(`Supprimer la commande de ${o.client} ?`)) return;
                     try { await api.deleteOrder(adminCode, o.id); orders = orders.filter(x => x.id !== o.id); renderOrders(); }
                     catch (err) { toast('Erreur : ' + err.message); }
                 });
+                const actions = el('span', { className: 'actions' });
+                const next = { nouvelle: ['prete', '✅ Marquer prête'], prete: ['remise', '🤝 Marquer remise'] }[o.statut];
+                if (next) { const q = el('button', { className: 'btn btn-small', type: 'button', textContent: next[1] }); q.addEventListener('click', () => changeStatus(o, next[0])); actions.append(q); }
+                actions.append(sel, del);
                 wrap.append(el('div', { className: 'order st-' + o.statut },
                     el('div', { className: 'order-head' }, el('strong', { textContent: o.client }), el('small', { textContent: fmtDate(o.created_at) })),
                     el('small', { textContent: '📍 ' + o.rdv }),
                     el('ul', {}, ...o.items.map(i => el('li', { textContent: `${i.qty} × ${i.nom} — ${euro(i.prix * i.qty)}` }))),
-                    el('div', { className: 'order-foot' }, el('strong', { textContent: 'Total : ' + euro(o.total) }), el('span', {}, sel, ' ', del))));
+                    el('div', { className: 'order-foot' }, el('strong', { textContent: 'Total : ' + euro(o.total) }), actions)));
             });
         }
 
+        // ----- Produits : ajout, modification, suppression -----
+        let editingId = null;
+        function startEdit(p) {
+            editingId = p.id;
+            $('adminEmoji').value = p.emoji; $('adminNom').value = p.nom; $('adminDesc').value = p.desc; $('adminPrix').value = String(p.prix).replace('.', ',');
+            $('formTitle').textContent = `✏️ Modifier « ${p.nom} »`;
+            $('adminSubmit').textContent = 'Enregistrer les modifications';
+            $('adminCancel').hidden = false; $('adminForm').classList.add('editing');
+            renderAdminProducts();
+            $('adminForm').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('adminNom').focus();
+        }
+        function stopEdit() {
+            editingId = null; $('adminForm').reset();
+            $('formTitle').textContent = '➕ Ajouter un article';
+            $('adminSubmit').textContent = "Ajouter l'article";
+            $('adminCancel').hidden = true; $('adminForm').classList.remove('editing');
+            renderAdminProducts();
+        }
+        $('adminCancel').addEventListener('click', stopEdit);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && editingId !== null) stopEdit(); });
+
         function renderAdminProducts() {
             const ul = $('adminList'); ul.replaceChildren();
+            if (!products.length) ul.append(el('li', { textContent: 'Aucun article.' }));
             products.forEach(p => {
+                const edit = el('button', { className: 'btn btn-small btn-ghost', type: 'button', textContent: '✏️ Modifier' });
+                edit.addEventListener('click', () => startEdit(p));
                 const del = el('button', { className: 'btn btn-small btn-danger', type: 'button', textContent: 'Supprimer' });
                 del.addEventListener('click', async () => {
                     if (!confirm(`Supprimer « ${p.nom} » ?`)) return;
-                    try { await api.deleteProduct(adminCode, p.id); products = products.filter(x => x.id !== p.id); renderProducts(); renderAdminProducts(); }
-                    catch (err) { toast('Erreur : ' + err.message); }
+                    try {
+                        await api.deleteProduct(adminCode, p.id); products = products.filter(x => x.id !== p.id);
+                        if (editingId === p.id) stopEdit();
+                        reconcileCart(); renderProducts(); renderAdminProducts();
+                    } catch (err) { toast('Erreur : ' + err.message); }
                 });
-                ul.append(el('li', {}, el('span', { textContent: `${p.emoji} ${p.nom} — ${euro(p.prix)}` }), del));
+                ul.append(el('li', { className: p.id === editingId ? 'editing' : '' },
+                    el('span', { className: 'info' }, `${p.emoji} ${p.nom} — ${euro(p.prix)}`, el('small', { textContent: p.desc })),
+                    el('span', { className: 'actions' }, edit, del)));
             });
         }
         $('adminForm').addEventListener('submit', async e => {
             e.preventDefault();
             const prix = parseFloat($('adminPrix').value.replace(',', '.'));
             if (!isFinite(prix) || prix < 0) { toast('Prix invalide'); return; }
+            const data = { emoji: $('adminEmoji').value.trim() || '📦', nom: $('adminNom').value.trim(), desc: $('adminDesc').value.trim(), prix };
+            const btn = $('adminSubmit'); btn.disabled = true;
             try {
-                const p = await api.addProduct(adminCode, { emoji: $('adminEmoji').value.trim() || '📦', nom: $('adminNom').value.trim(), desc: $('adminDesc').value.trim(), prix });
-                products.push(p); renderProducts(); renderAdminProducts(); e.target.reset(); toast('Article ajouté');
+                if (editingId !== null) {
+                    const old = editingId, saved = await api.updateProduct(adminCode, old, data);
+                    products = products.map(x => x.id === old ? saved : x);
+                    stopEdit(); toast('Article modifié ✓');
+                } else {
+                    products.push(await api.addProduct(adminCode, data)); e.target.reset(); toast('Article ajouté');
+                }
+                reconcileCart(); renderProducts(); renderAdminProducts();
             } catch (err) { toast('Erreur : ' + err.message); }
+            finally { btn.disabled = false; }
         });
 
         // ================= DÉMARRAGE =================
+        (function restoreProfile() {
+            const pr = load('vdf_profile', null); if (!pr) return;
+            $('nom').value = pr.nom || '';
+            if ([...$('rdv').options].some(o => o.value === pr.rdv)) $('rdv').value = pr.rdv;
+        })();
         renderCart();
         loadProducts();
     </script>
